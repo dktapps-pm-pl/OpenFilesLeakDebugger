@@ -19,28 +19,6 @@ class Main extends PluginBase{
 			$this->dudPipes[$i] = fopen("randomFile$i.txt", "wb");
 		}
 		
-		/*$this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends Task{
-			public function __construct(Main $plugin){
-				$this->plugin = $plugin;
-			}
-			
-			public function onRun($currentTick){
-				try{
-					$descriptor = fopen($this->plugin->getDataFolder() . "test.txt", "wb");
-					fclose($descriptor);
-				}catch(\ErrorException $e){
-					foreach($this->plugin->dudPipes as $pipe){
-						fclose($pipe);
-					}
-					$this->plugin->dudPipes = [];
-					Utils::execute("ls -la /proc/" . getmypid() . "/fd", $stdout, $stderr);
-					var_dump($stdout, $stderr);
-					
-					$this->plugin->getServer()->getScheduler()->cancelTask($this->getHandler()->getTaskId());
-				}
-			}
-		}, 1);*/
-
 		set_error_handler(function($severity, $message, $file, $line){
 			if(strpos($message, "Too many open files") !== false){
 				foreach($this->dudPipes as $pipe){
@@ -57,7 +35,8 @@ class Main extends PluginBase{
 				return true;
 			}
 		});
-		
+
+		//For testing the plugin itself only.
 		/*$this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends Task{
 		
 			public function __construct(Main $plugin){
