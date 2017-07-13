@@ -19,7 +19,7 @@ class Main extends PluginBase{
 			$this->dudPipes[$i] = fopen("randomFile$i.txt", "wb");
 		}
 		
-		$this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends Task{
+		/*$this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends Task{
 			public function __construct(Main $plugin){
 				$this->plugin = $plugin;
 			}
@@ -39,7 +39,24 @@ class Main extends PluginBase{
 					$this->plugin->getServer()->getScheduler()->cancelTask($this->getHandler()->getTaskId());
 				}
 			}
-		}, 1);
+		}, 1);*/
+
+		set_error_handler(function($severity, $message, $file, $line){
+			if(strpos($message, "Too many open files") !== false){
+				foreach($this->dudPipes as $pipe){
+					fclose($pipe);
+				}
+				$this->dudPipes = [];
+				@Utils::execute("ls -la /proc/" . getmypid() . "/fd", $stdout, $stderr);
+				var_dump($stdout, $stderr);
+			}
+
+			if((error_reporting() & $severity)){
+				throw new \ErrorException($message, 0, $severity, $file, $line);
+			}else{ //stfu operator
+				return true;
+			}
+		});
 		
 		/*$this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends Task{
 		
