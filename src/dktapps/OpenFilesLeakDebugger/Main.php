@@ -64,6 +64,7 @@ class Main extends PluginBase{
 				try{
 					$this->plugin->testPipes[] = fopen($this->plugin->getDataFolder() . bin2hex(random_bytes(4)) . ".txt", "wb");
 				}catch(\ErrorException $e){
+					$this->plugin->getLogger()->logException($e);
 					$this->plugin->getServer()->getScheduler()->cancelTask($this->getHandler()->getTaskId());
 				}
 			}
