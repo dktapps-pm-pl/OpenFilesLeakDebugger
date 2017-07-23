@@ -64,7 +64,7 @@ class Main extends PluginBase{
 
 			public function onRun(int $currentTick){
 				try{
-					$this->plugin->testPipes[] = fopen($this->plugin->getDataFolder() . "spamfiles" . DIRECTORY_SEPARATOR . bin2hex(random_bytes(4)) . ".txt", "wb");
+					$this->plugin->testPipes[] = fopen($this->plugin->getDataFolder() . "spamFiles" . DIRECTORY_SEPARATOR . bin2hex(random_bytes(4)) . ".txt", "wb");
 				}catch(\ErrorException $e){
 					$this->plugin->getLogger()->logException($e);
 					$this->plugin->getServer()->getScheduler()->cancelTask($this->getHandler()->getTaskId());
