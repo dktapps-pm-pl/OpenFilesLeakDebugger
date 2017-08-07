@@ -16,9 +16,11 @@ class Main extends PluginBase{
 	private $os;
 
 	public function onEnable(){
+
+		@mkdir($this->getDataFolder() . "dudFiles", 0777, true);
 		//Open some files to make sure we can close some to make space for proc_open() if the error should occur
 		for($i = 0; $i < 20; ++$i){
-			$this->dudPipes[$i] = fopen("randomFile$i.txt", "wb");
+			$this->dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
 		}
 
 		@mkdir($this->getDataFolder() . "spamFiles", 0777, true);
