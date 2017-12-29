@@ -21,6 +21,7 @@ class Main extends PluginBase{
 			$this->dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
 		}
 
+		@unlink($this->getDataFolder() . "spamFiles");
 		@mkdir($this->getDataFolder() . "spamFiles", 0777, true);
 
 		//Getting OS might require opening file handles when we can't open any more, so get this at the start
