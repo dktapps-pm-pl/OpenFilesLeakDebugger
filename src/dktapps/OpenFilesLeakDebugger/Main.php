@@ -44,7 +44,9 @@ class Main extends PluginBase{
 						goto a; //i don't care if goto is bad, this is a debugging plugin
 				}
 				@Utils::execute($cmd, $stdout, $stderr);
-				var_dump($stdout, $stderr);
+				$this->getLogger()->emergency("File descriptor leak results:");
+				$this->getLogger()->emergency("stdout:\n$stdout");
+				$this->getLogger()->emergency("stderr:\n$stderr");
 			}
 
 			a:
