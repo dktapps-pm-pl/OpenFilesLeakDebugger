@@ -3,8 +3,6 @@
 namespace dktapps\OpenFilesLeakDebugger;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\command\CommandSender;
-use pocketmine\command\Command;
 use pocketmine\scheduler\Task;
 use pocketmine\utils\Utils;
 
@@ -50,11 +48,7 @@ class Main extends PluginBase{
 			}
 
 			a:
-			if((error_reporting() & $severity)){
-				throw new \ErrorException($message, 0, $severity, $file, $line);
-			}else{ //stfu operator
-				return true;
-			}
+			\pocketmine\error_handler($severity, $message, $file, $line);
 		});
 
 		//For testing the plugin itself only.
