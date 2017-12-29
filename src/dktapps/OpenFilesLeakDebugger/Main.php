@@ -48,6 +48,7 @@ class Main extends PluginBase{
 				$this->getLogger()->emergency("File descriptor leak results:");
 				$this->getLogger()->emergency("stdout:\n$stdout");
 				$this->getLogger()->emergency("stderr:\n$stderr");
+				$this->getServer()->shutdown();
 			}
 
 			a:
