@@ -28,13 +28,14 @@ class Main extends PluginBase{
 		$this->os = Utils::getOS();
 
 		set_error_handler(function($severity, $message, $file, $line){
-			if(strpos($message, "Too many open files") !== false){
+			if(strpos($message, "Too many open files") !== false or strpos($message, "No file descriptors available") !== false){
 				foreach($this->dudPipes as $pipe){
 					fclose($pipe);
 				}
 				$this->dudPipes = [];
 				switch($this->os){
 					case "linux":
+					case "android":
 						$cmd = "ls -la /proc/" . getmypid() . "/fd";
 						break;
 					case "mac":
@@ -52,11 +53,11 @@ class Main extends PluginBase{
 			}
 
 			a:
-			\pocketmine\error_handler($severity, $message, $file, $line);
+			Utils::errorExceptionHandler($severity, $message, $file, $line);
 		});
 
 		//For testing the plugin itself only.
-		/*$this->getServer()->getScheduler()->scheduleRepeatingTask(new class($this) extends Task{
+		/*$this->getScheduler()->scheduleRepeatingTask(new class($this) extends Task{
 
 			public function __construct(Main $plugin){
 				$this->plugin = $plugin;
@@ -67,7 +68,7 @@ class Main extends PluginBase{
 					$this->plugin->testPipes[] = fopen($this->plugin->getDataFolder() . "spamFiles" . DIRECTORY_SEPARATOR . bin2hex(random_bytes(4)) . ".txt", "wb");
 				}catch(\ErrorException $e){
 					$this->plugin->getLogger()->logException($e);
-					$this->plugin->getServer()->getScheduler()->cancelTask($this->getHandler()->getTaskId());
+					$this->plugin->getScheduler()->cancelTask($this->getHandler()->getTaskId());
 				}
 			}
 		}, 1);*/
