@@ -8,7 +8,7 @@ use pocketmine\utils\Utils;
 
 class Main extends PluginBase{
 
-	public $dudPipes = [];
+	public static $dudPipes = [];
 	public $testPipes = [];
 
 	private $os;
@@ -17,8 +17,10 @@ class Main extends PluginBase{
 
 		@mkdir($this->getDataFolder() . "dudFiles", 0777, true);
 		//Open some files to make sure we can close some to make space for proc_open() if the error should occur
-		for($i = 0; $i < 20; ++$i){
-			$this->dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
+		if(empty(self::$dudPipes)){
+			for($i = 0; $i < 20; ++$i){
+				self::$dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
+			}
 		}
 
 		@unlink($this->getDataFolder() . "spamFiles");
@@ -29,10 +31,10 @@ class Main extends PluginBase{
 
 		set_error_handler(function($severity, $message, $file, $line){
 			if(strpos($message, "Too many open files") !== false or strpos($message, "No file descriptors available") !== false){
-				foreach($this->dudPipes as $pipe){
+				foreach(self::$dudPipes as $pipe){
 					fclose($pipe);
 				}
-				$this->dudPipes = [];
+				self::$dudPipes = [];
 				switch($this->os){
 					case "linux":
 					case "android":
