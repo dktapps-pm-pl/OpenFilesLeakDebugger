@@ -3,7 +3,6 @@
 namespace dktapps\OpenFilesLeakDebugger;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\scheduler\Task;
 use pocketmine\utils\Utils;
 
 class Main extends PluginBase{
@@ -22,9 +21,6 @@ class Main extends PluginBase{
 				self::$dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
 			}
 		}
-
-		@unlink($this->getDataFolder() . "spamFiles");
-		@mkdir($this->getDataFolder() . "spamFiles", 0777, true);
 
 		//Getting OS might require opening file handles when we can't open any more, so get this at the start
 		$this->os = Utils::getOS();
@@ -59,20 +55,31 @@ class Main extends PluginBase{
 		});
 
 		//For testing the plugin itself only.
-		/*$this->getScheduler()->scheduleRepeatingTask(new class($this) extends Task{
+		if((bool) $this->getConfig()->get("test-mode", false)){
+			$this->runTest();
+		}
+	}
 
-			public function __construct(Main $plugin){
-				$this->plugin = $plugin;
-			}
+	private function runTest() : void{
+		$this->getLogger()->notice("Running leak detection test. The server will freeze and may crash.");
 
-			public function onRun(int $currentTick){
-				try{
-					$this->plugin->testPipes[] = fopen($this->plugin->getDataFolder() . "spamFiles" . DIRECTORY_SEPARATOR . bin2hex(random_bytes(4)) . ".txt", "wb");
-				}catch(\ErrorException $e){
-					$this->plugin->getLogger()->logException($e);
-					$this->plugin->getScheduler()->cancelTask($this->getHandler()->getTaskId());
+		$testFiles = [];
+		$directory = $this->getDataFolder() . "spamFiles" . DIRECTORY_SEPARATOR;
+
+		@unlink($directory);
+		@mkdir($directory, 0777, true);
+
+		while(true){
+			try{
+				$testFiles[] = fopen($directory . bin2hex(random_bytes(4)) . ".txt", "wb");
+			}catch(\ErrorException $e){
+				$this->getLogger()->logException($e);
+				foreach($testFiles as $file){
+					fclose($file);
 				}
+				$this->getServer()->shutdown();
+				break;
 			}
-		}, 1);*/
+		}
 	}
 }
