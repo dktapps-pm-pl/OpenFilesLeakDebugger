@@ -28,6 +28,7 @@ class Main extends PluginBase{
 					fclose($pipe);
 				}
 				$this->dudPipes = [];
+				$cmd = null;
 				switch($os){
 					case "linux":
 					case "android":
@@ -36,18 +37,18 @@ class Main extends PluginBase{
 					case "mac":
 						$cmd = "lsof -p " . getmypid();
 						break;
-					default:
-						$this->getLogger()->error("Operating system not supported");
-						goto a; //i don't care if goto is bad, this is a debugging plugin
 				}
-				@Utils::execute($cmd, $stdout, $stderr);
-				$this->getLogger()->emergency("File descriptor leak results:");
-				$this->getLogger()->emergency("stdout:\n$stdout");
-				$this->getLogger()->emergency("stderr:\n$stderr");
-				$this->getServer()->shutdown();
+				if($cmd !== null){
+					@Utils::execute($cmd, $stdout, $stderr);
+					$this->getLogger()->emergency("File descriptor leak results:");
+					$this->getLogger()->emergency("stdout:\n$stdout");
+					$this->getLogger()->emergency("stderr:\n$stderr");
+					$this->getServer()->shutdown();
+				}else{
+					$this->getLogger()->error("Operating system not supported");
+				}
 			}
 
-			a:
 			return Utils::errorExceptionHandler($severity, $message, $file, $line);
 		});
 
