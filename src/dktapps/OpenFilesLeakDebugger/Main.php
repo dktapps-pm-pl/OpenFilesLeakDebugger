@@ -2,7 +2,9 @@
 
 namespace dktapps\OpenFilesLeakDebugger;
 
+use pocketmine\errorhandler\ErrorToExceptionHandler;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\Process;
 use pocketmine\utils\Utils;
 
 class Main extends PluginBase{
@@ -38,8 +40,9 @@ class Main extends PluginBase{
 						$cmd = "lsof -p " . getmypid();
 						break;
 				}
+
 				if($cmd !== null){
-					@Utils::execute($cmd, $stdout, $stderr);
+					@Process::execute($cmd, $stdout, $stderr);
 					$this->getLogger()->emergency("File descriptor leak results:");
 					$this->getLogger()->emergency("stdout:\n$stdout");
 					$this->getLogger()->emergency("stderr:\n$stderr");
@@ -49,7 +52,7 @@ class Main extends PluginBase{
 				}
 			}
 
-			return Utils::errorExceptionHandler($severity, $message, $file, $line);
+			return ErrorToExceptionHandler::handle($severity, $message, $file, $line);
 		});
 
 		//For testing the plugin itself only.
