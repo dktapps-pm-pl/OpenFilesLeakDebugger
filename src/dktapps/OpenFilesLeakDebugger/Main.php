@@ -2,7 +2,9 @@
 
 namespace dktapps\OpenFilesLeakDebugger;
 
+use pocketmine\errorhandler\ErrorToExceptionHandler;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\Process;
 use pocketmine\utils\Utils;
 
 class Main extends PluginBase{
@@ -12,7 +14,7 @@ class Main extends PluginBase{
 
 	private $os;
 
-	public function onEnable(){
+	public function onEnable() : void{
 
 		@mkdir($this->getDataFolder() . "dudFiles", 0777, true);
 		//Open some files to make sure we can close some to make space for proc_open() if the error should occur
@@ -43,7 +45,7 @@ class Main extends PluginBase{
 						$this->getLogger()->error("Operating system not supported");
 						goto a; //i don't care if goto is bad, this is a debugging plugin
 				}
-				@Utils::execute($cmd, $stdout, $stderr);
+				@Process::execute($cmd, $stdout, $stderr);
 				$this->getLogger()->emergency("File descriptor leak results:");
 				$this->getLogger()->emergency("stdout:\n$stdout");
 				$this->getLogger()->emergency("stderr:\n$stderr");
@@ -51,7 +53,7 @@ class Main extends PluginBase{
 			}
 
 			a:
-			Utils::errorExceptionHandler($severity, $message, $file, $line);
+			ErrorToExceptionHandler::handle($severity, $message, $file, $line);
 		});
 
 		//For testing the plugin itself only.
