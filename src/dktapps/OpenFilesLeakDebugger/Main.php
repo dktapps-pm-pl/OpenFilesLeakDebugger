@@ -10,8 +10,6 @@ class Main extends PluginBase{
 	public static $dudPipes = [];
 	public $testPipes = [];
 
-	private $os;
-
 	public function onEnable(){
 
 		@mkdir($this->getDataFolder() . "dudFiles", 0777, true);
@@ -23,15 +21,15 @@ class Main extends PluginBase{
 		}
 
 		//Getting OS might require opening file handles when we can't open any more, so get this at the start
-		$this->os = Utils::getOS();
+		$os = Utils::getOS();
 
-		set_error_handler(function($severity, $message, $file, $line){
+		set_error_handler(function($severity, $message, $file, $line) use ($os){
 			if(strpos($message, "Too many open files") !== false or strpos($message, "No file descriptors available") !== false){
 				foreach(self::$dudPipes as $pipe){
 					fclose($pipe);
 				}
 				self::$dudPipes = [];
-				switch($this->os){
+				switch($os){
 					case "linux":
 					case "android":
 						$cmd = "ls -la /proc/" . getmypid() . "/fd";
