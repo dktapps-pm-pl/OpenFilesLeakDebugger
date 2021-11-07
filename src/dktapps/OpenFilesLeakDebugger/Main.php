@@ -22,7 +22,7 @@ class Main extends PluginBase{
 		//Getting OS might require opening file handles when we can't open any more, so get this at the start
 		$os = Utils::getOS();
 
-		set_error_handler(function($severity, $message, $file, $line) use ($os){
+		set_error_handler(function(int $severity, string $message, string $file, int $line) use ($os) : bool{
 			if(strpos($message, "Too many open files") !== false or strpos($message, "No file descriptors available") !== false){
 				foreach($this->dudPipes as $pipe){
 					fclose($pipe);
@@ -48,7 +48,7 @@ class Main extends PluginBase{
 			}
 
 			a:
-			Utils::errorExceptionHandler($severity, $message, $file, $line);
+			return Utils::errorExceptionHandler($severity, $message, $file, $line);
 		});
 
 		//For testing the plugin itself only.
