@@ -8,7 +8,6 @@ use pocketmine\utils\Utils;
 class Main extends PluginBase{
 
 	public static $dudPipes = [];
-	public $testPipes = [];
 
 	public function onEnable(){
 
