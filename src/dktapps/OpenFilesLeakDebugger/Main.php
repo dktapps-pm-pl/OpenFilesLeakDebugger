@@ -9,7 +9,7 @@ class Main extends PluginBase{
 
 	public static $dudPipes = [];
 
-	public function onEnable(){
+	public function onEnable() : void{
 
 		@mkdir($this->getDataFolder() . "dudFiles", 0777, true);
 		//Open some files to make sure we can close some to make space for proc_open() if the error should occur
