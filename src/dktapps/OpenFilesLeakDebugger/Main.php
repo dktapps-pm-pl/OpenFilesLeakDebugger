@@ -6,16 +6,16 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Utils;
 
 class Main extends PluginBase{
-
-	public static $dudPipes = [];
+	/** @var resource[] */
+	private array $dudPipes = [];
 
 	public function onEnable() : void{
 
 		@mkdir($this->getDataFolder() . "dudFiles", 0777, true);
 		//Open some files to make sure we can close some to make space for proc_open() if the error should occur
-		if(empty(self::$dudPipes)){
+		if(count($this->dudPipes) === 0){
 			for($i = 0; $i < 20; ++$i){
-				self::$dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
+				$this->dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
 			}
 		}
 
@@ -24,10 +24,10 @@ class Main extends PluginBase{
 
 		set_error_handler(function($severity, $message, $file, $line) use ($os){
 			if(strpos($message, "Too many open files") !== false or strpos($message, "No file descriptors available") !== false){
-				foreach(self::$dudPipes as $pipe){
+				foreach($this->dudPipes as $pipe){
 					fclose($pipe);
 				}
-				self::$dudPipes = [];
+				$this->dudPipes = [];
 				switch($os){
 					case "linux":
 					case "android":
@@ -55,6 +55,13 @@ class Main extends PluginBase{
 		if((bool) $this->getConfig()->get("test-mode", false)){
 			$this->runTest();
 		}
+	}
+
+	public function onDisable() : void{
+		foreach($this->dudPipes as $pipe){
+			fclose($pipe);
+		}
+		$this->dudPipes = [];
 	}
 
 	private function runTest() : void{
