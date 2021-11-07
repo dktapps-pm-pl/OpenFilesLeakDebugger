@@ -8,32 +8,30 @@ use pocketmine\utils\Process;
 use pocketmine\utils\Utils;
 
 class Main extends PluginBase{
-
-	public static $dudPipes = [];
-	public $testPipes = [];
-
-	private $os;
+	/** @var resource[] */
+	private array $dudPipes = [];
 
 	public function onEnable() : void{
 
 		@mkdir($this->getDataFolder() . "dudFiles", 0777, true);
 		//Open some files to make sure we can close some to make space for proc_open() if the error should occur
-		if(empty(self::$dudPipes)){
+		if(count($this->dudPipes) === 0){
 			for($i = 0; $i < 20; ++$i){
-				self::$dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
+				$this->dudPipes[$i] = fopen($this->getDataFolder() . "dudFiles" . DIRECTORY_SEPARATOR . "randomFile$i.txt", "wb");
 			}
 		}
 
 		//Getting OS might require opening file handles when we can't open any more, so get this at the start
-		$this->os = Utils::getOS();
+		$os = Utils::getOS();
 
-		set_error_handler(function($severity, $message, $file, $line){
+		set_error_handler(function(int $severity, string $message, string $file, int $line) use ($os) : bool{
 			if(strpos($message, "Too many open files") !== false or strpos($message, "No file descriptors available") !== false){
-				foreach(self::$dudPipes as $pipe){
+				foreach($this->dudPipes as $pipe){
 					fclose($pipe);
 				}
-				self::$dudPipes = [];
-				switch($this->os){
+				$this->dudPipes = [];
+				$cmd = null;
+				switch($os){
 					case "linux":
 					case "android":
 						$cmd = "ls -la /proc/" . getmypid() . "/fd";
@@ -41,25 +39,33 @@ class Main extends PluginBase{
 					case "mac":
 						$cmd = "lsof -p " . getmypid();
 						break;
-					default:
-						$this->getLogger()->error("Operating system not supported");
-						goto a; //i don't care if goto is bad, this is a debugging plugin
 				}
-				@Process::execute($cmd, $stdout, $stderr);
-				$this->getLogger()->emergency("File descriptor leak results:");
-				$this->getLogger()->emergency("stdout:\n$stdout");
-				$this->getLogger()->emergency("stderr:\n$stderr");
-				$this->getServer()->shutdown();
+
+				if($cmd !== null){
+					@Process::execute($cmd, $stdout, $stderr);
+					$this->getLogger()->emergency("File descriptor leak results:");
+					$this->getLogger()->emergency("stdout:\n$stdout");
+					$this->getLogger()->emergency("stderr:\n$stderr");
+					$this->getServer()->shutdown();
+				}else{
+					$this->getLogger()->error("Operating system not supported");
+				}
 			}
 
-			a:
-			ErrorToExceptionHandler::handle($severity, $message, $file, $line);
+			return ErrorToExceptionHandler::handle($severity, $message, $file, $line);
 		});
 
 		//For testing the plugin itself only.
 		if((bool) $this->getConfig()->get("test-mode", false)){
 			$this->runTest();
 		}
+	}
+
+	public function onDisable() : void{
+		foreach($this->dudPipes as $pipe){
+			fclose($pipe);
+		}
+		$this->dudPipes = [];
 	}
 
 	private function runTest() : void{
